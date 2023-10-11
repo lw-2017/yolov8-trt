@@ -18,11 +18,12 @@ def parse_args():
     parser.add_argument('-w',
                         '--weights',
                         type=str,
-                        required=True,
+                        default='./weight/yolov8s-seg.pt',
+                        # required=True,
                         help='PyTorch yolov8 weights')
     parser.add_argument('--opset',
                         type=int,
-                        default=11,
+                        default=12,
                         help='ONNX opset version')
     parser.add_argument('--sim',
                         action='store_true',
@@ -34,7 +35,7 @@ def parse_args():
                         help='Model input shape only for api builder')
     parser.add_argument('--device',
                         type=str,
-                        default='cpu',
+                        default='cuda:0',
                         help='Export ONNX device')
     args = parser.parse_args()
     assert len(args.input_shape) == 4

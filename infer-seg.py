@@ -5,6 +5,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 import torch
+import time
 
 from config import ALPHA, CLASSES, COLORS, MASK_COLORS
 from models.torch_utils import seg_postprocess
@@ -36,12 +37,21 @@ def main(args: argparse.Namespace) -> None:
         dwdh = torch.asarray(dwdh * 2, dtype=torch.float32, device=device)
         tensor = torch.asarray(tensor, device=device)
         # inference
-        data = Engine(tensor)
+
+        start_time = time.time()
+        for i in range(100):
+            data = Engine(tensor)
+        end_time = time.time()
+        print(" infer take time is %.4f s" % ((end_time - start_time) / 100))
+        print("data is", data[0][0].size(), data[1][0].size())
 
         seg_img = torch.asarray(seg_img[dh:H - dh, dw:W - dw, [2, 1, 0]],
                                 device=device)
-        bboxes, scores, labels, masks = seg_postprocess(
-            data, bgr.shape[:2], args.conf_thres, args.iou_thres)
+        for i in range(50):
+            bboxes, scores, labels, masks = seg_postprocess(
+                data, bgr.shape[:2], args.conf_thres, args.iou_thres)
+        end_post_time = time.time()
+        print("postprocess take time is %.4f s" % ((end_post_time - end_time) / 50))
         if bboxes.numel() == 0:
             # if no bounding box
             print(f'{image}: no object!')
@@ -56,6 +66,8 @@ def main(args: argparse.Namespace) -> None:
         seg_img = (seg_img * inv_alph_masks[-1] + mcs) * 255
         draw = cv2.resize(seg_img.cpu().numpy().astype(np.uint8),
                           draw.shape[:2][::-1])
+
+        cv2.imwrite(str(save_image), draw)
 
         bboxes -= dwdh
         bboxes /= ratio
@@ -74,14 +86,14 @@ def main(args: argparse.Namespace) -> None:
         if args.show:
             cv2.imshow('result', draw)
             cv2.waitKey(0)
-        else:
-            cv2.imwrite(str(save_image), draw)
+        # else:
+        #     cv2.imwrite(str(save_image), draw)
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--engine', type=str, help='Engine file')
-    parser.add_argument('--imgs', type=str, help='Images file')
+    parser.add_argument('--engine', type=str, default='./weight/yolov8s-seg.engine', help='Engine file')
+    parser.add_argument('--imgs', type=str, default='./data/bus.jpg', help='Images file')
     parser.add_argument('--show',
                         action='store_true',
                         help='Show the detection results')

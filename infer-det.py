@@ -43,6 +43,8 @@ def main(args: argparse.Namespace) -> None:
         for i in range(100):
             data = Engine(tensor)
             # data 5 tensor: num bbox scores class_num
+            # data 输出 5个tensor ，
+            # 分别是 检测到的目标数量num， 所有的Bbox框 ，所有的框得分scores， 所有的框所属的类别class_num
         end_time = time.time()
         print('infer time take: %.4f s' % ((end_time - start_time) / 100))
         print('output size: ', data)

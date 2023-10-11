@@ -9,7 +9,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights',
                         type=str,
-                        default='./weight/yolov8s.onnx',
+                        default='./weight/yolov8s-seg.onnx',
                         # required=True,
                         help='Weights file')
     parser.add_argument('--iou-thres',
